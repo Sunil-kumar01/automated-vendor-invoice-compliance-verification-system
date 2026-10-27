@@ -57,7 +57,7 @@ Invoice text is sent to the AI service configured for the app. Check your organi
    AI_PROVIDER = "openai_compatible"
    AI_MODEL = "gemini-3.8-flash"
    OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
-   OPENAI_API_KEY = "your-gemini-api-key"
+   GEMINI_API_KEY = "your-gemini-api-key"
    ```
 
 4. Save the settings and deploy. Upload a test invoice and review the result before sharing the app.

@@ -25,7 +25,7 @@ if uploaded_file is not None:
     model = setting("AI_MODEL", "qwen2.5")
     ollama_url = setting("OLLAMA_URL", "http://localhost:11434/api/generate")
     openai_base_url = setting("OPENAI_BASE_URL")
-    api_key = setting("OPENAI_API_KEY")
+    api_key = setting("GEMINI_API_KEY") or setting("OPENAI_API_KEY")
 
     try:
         with st.spinner("Reading the invoice and checking its details..."):
