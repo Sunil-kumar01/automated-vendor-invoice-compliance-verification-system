@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 import streamlit as st
 
@@ -9,13 +10,19 @@ st.set_page_config(page_title="Enterprise B2B AI Agent", layout="centered")
 
 st.title("Secure Local B2B AI Agent")
 st.write("Automated Vendor Invoice & Compliance Verification System")
+st.warning(
+    "Public demo: anyone with the link can access this app. Use sample, "
+    "non-sensitive PDFs only. Invoice analysis runs on Qwen 2.5 through "
+    "Ollama on this Mac."
+)
 
 uploaded_file = st.file_uploader("Upload Vendor Document (PDF)", type=["pdf"])
 
 if uploaded_file is not None:
-    temp_path = "temp.pdf"
+    temp_path = None
     try:
-        with open(temp_path, "wb") as file:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as file:
+            temp_path = file.name
             file.write(uploaded_file.getbuffer())
 
         with st.spinner("Extracting text and running local AI validation..."):
@@ -34,5 +41,5 @@ if uploaded_file is not None:
                 "Attention Required: Discrepancies or missing compliance data found."
             )
     finally:
-        if os.path.exists(temp_path):
+        if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)

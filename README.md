@@ -6,6 +6,8 @@
 
 The app is a small demo for checking vendor invoices before a person reviews them. It extracts invoice text, asks the AI to organize important fields, then displays the result. "Valid" is only an AI suggestion, not a financial approval.
 
+For a simple use-case, workflow, file-by-file, and video explanation guide, see [Vendor Invoice Demo Guide (PDF)](./Vendor_Invoice_Demo_Guide_2026-10-27.pdf).
+
 ## What model does it use?
 
 It uses **Qwen 2.5**, served locally by **Ollama**. The app sends requests to `http://localhost:11434`; it does not send invoice text to a cloud AI service.
@@ -53,4 +55,23 @@ streamlit run app.py --server.address 0.0.0.0
 
 Find this Mac's local network IP address (for example, in **System Settings > Wi-Fi > Details**) and give the other person `http://<this-mac-ip>:8501`. Keep this limited to a trusted network, allow the connection through the Mac firewall if asked, and keep Ollama running. Do not expose this demo directly to the public internet; it has no login or access control.
 
-For someone outside your network, `localhost` will not work. The simplest safe option is to show them the demo on this Mac; remote public sharing requires a separately secured hosting/tunnel setup.
+## Let someone on another network try it
+
+This project can be shared temporarily through a Cloudflare Quick Tunnel. The tunnel gives this Mac's running Streamlit app a public HTTPS link; Qwen 2.5 and Ollama continue to run on this Mac.
+
+1. Start Ollama and Streamlit as described above. Keep both running.
+2. In a second Terminal window, run:
+
+   ```bash
+   cloudflared tunnel --url http://127.0.0.1:8501
+   ```
+3. Copy the `https://...trycloudflare.com` link printed in Terminal and share it with testers.
+4. Keep that Terminal window open while people test. Stop the tunnel with **Control+C** when finished; the link then stops working.
+
+The tunnel is public and this demo has no login. Anyone with the link can access it while the tunnel is running. Use only sample, non-sensitive invoices. Uploaded PDFs are processed by Ollama on this Mac, but requests travel through Cloudflare's tunnel to reach it. This is for a temporary demo, not production deployment. Never share the Mac's Ollama port (`11434`) directly.
+
+If `cloudflared` is not installed, install it with Homebrew:
+
+```bash
+brew install cloudflared
+```
