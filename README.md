@@ -17,9 +17,10 @@ It uses **Qwen 2.5**, served locally by **Ollama**. The app sends requests to `h
 - `app.py` — Displays the page, accepts a PDF, and shows the analysis.
 - `engine.py` — Extracts text from the PDF and asks local Qwen 2.5 to return invoice fields as JSON.
 - `requirements.txt` — Lists the Python libraries needed to run the app.
+- `run_windows.bat` / `run_mac_linux.sh` — One-click setup and app launchers.
 - `.gitignore` — Keeps local Python environments, temporary PDFs, and caches out of Git.
 - `README.md` — Explains the demo and how to start it.
-- `venv/` — Python environment on this computer; it is not source code to share.
+- `.venv/` — Python environment created on each computer; it is not included in the download.
 
 ## How it works
 
@@ -31,19 +32,25 @@ It uses **Qwen 2.5**, served locally by **Ollama**. The app sends requests to `h
 
 Scanned/image-only PDFs may not contain selectable text, so this demo may not read them. It does not independently verify suppliers, purchase orders, arithmetic, or regulatory compliance.
 
-## Start the demo on this Mac
+## Run the demo on Windows or Mac
 
-Install Python and [Ollama](https://ollama.com/), then run these commands from the project folder:
+Install Python 3 and [Ollama](https://ollama.com/download), then open the extracted project folder in VS Code. In the VS Code Explorer, run `run_windows.bat` on Windows or `run_mac_linux.sh` on Mac/Linux. On Mac/Linux, you may first need to run `chmod +x run_mac_linux.sh` from the VS Code terminal.
+
+The launcher creates a local Python environment, installs the packages from `requirements.txt`, starts Ollama if needed, downloads Qwen 2.5 if it is missing, and starts Streamlit. The first run needs internet access and several GB of free disk space for the AI model; allow time for the model download.
+
+Alternatively, in the VS Code terminal from the project folder run:
 
 ```bash
-ollama pull qwen2.5
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+ollama pull qwen2.5
 streamlit run app.py
 ```
 
-Open the **Local URL** shown in Terminal, usually `http://localhost:8501`. Keep Ollama running while you use the app.
+On Windows PowerShell, use `py -3 -m venv .venv`, then `.venv\\Scripts\\python.exe -m pip install -r requirements.txt`, `ollama pull qwen2.5`, and `.venv\\Scripts\\python.exe -m streamlit run app.py`.
+
+Open the **Local URL** shown in the terminal, usually `http://localhost:8501`. Keep Ollama running while using the app. The ZIP includes the app source and Python dependency list, but not Python, Ollama, or the multi-GB Qwen model; each computer installs these locally.
 
 ## Let someone nearby try it
 
@@ -53,25 +60,14 @@ Open the **Local URL** shown in Terminal, usually `http://localhost:8501`. Keep 
 streamlit run app.py --server.address 0.0.0.0
 ```
 
-Find this Mac's local network IP address (for example, in **System Settings > Wi-Fi > Details**) and give the other person `http://<this-mac-ip>:8501`. Keep this limited to a trusted network, allow the connection through the Mac firewall if asked, and keep Ollama running. Do not expose this demo directly to the public internet; it has no login or access control.
+Find this computer's local network IP address and give the other person `http://<computer-ip>:8501`. Keep this limited to a trusted network, allow the connection through the firewall if asked, and keep Ollama running. Do not expose this demo directly to the public internet; it has no login or access control.
 
-## Let someone on another network try it
+## Temporary sharing over another network
 
-This project can be shared temporarily through a Cloudflare Quick Tunnel. The tunnel gives this Mac's running Streamlit app a public HTTPS link; Qwen 2.5 and Ollama continue to run on this Mac.
-
-1. Start Ollama and Streamlit as described above. Keep both running.
-2. In a second Terminal window, run:
-
-   ```bash
-   cloudflared tunnel --url http://127.0.0.1:8501
-   ```
-3. Copy the `https://...trycloudflare.com` link printed in Terminal and share it with testers.
-4. Keep that Terminal window open while people test. Stop the tunnel with **Control+C** when finished; the link then stops working.
-
-The tunnel is public and this demo has no login. Anyone with the link can access it while the tunnel is running. Use only sample, non-sensitive invoices. Uploaded PDFs are processed by Ollama on this Mac, but requests travel through Cloudflare's tunnel to reach it. This is for a temporary demo, not production deployment. Never share the Mac's Ollama port (`11434`) directly.
-
-If `cloudflared` is not installed, install it with Homebrew:
+A Cloudflare Quick Tunnel can temporarily provide a public HTTPS link to this computer's running Streamlit app. Qwen 2.5 and Ollama continue to run on this computer. Start Ollama and Streamlit, then in a second terminal run:
 
 ```bash
-brew install cloudflared
+cloudflared tunnel --url http://127.0.0.1:8501
 ```
+
+Share the `https://...trycloudflare.com` link printed in the terminal. Keep the terminal open while testing and stop the tunnel with **Ctrl+C** when finished. Anyone with the link can access the app, which has no login. Use only sample, non-sensitive invoices. Never expose Ollama's port (`11434`) directly. This is temporary demo access, not production deployment.
