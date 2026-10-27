@@ -18,7 +18,7 @@ The app extracts invoice text, asks an AI model to organize the details, and dis
 
 ## AI model
 
-The original local setup uses **Qwen 2.5 through Ollama**. For cloud deployment, configure an **OpenAI-compatible AI service** in Streamlit Cloud Secrets. Set its endpoint, model name, and API key there; never put the real key in this repository. This supports cloud AI providers that implement the OpenAI chat-completions API and JSON response format.
+The original local setup uses **Qwen 2.5 through Ollama**. For cloud deployment with a Gemini key, use **Google Gemini** through its OpenAI-compatible API (`gemini-3.8-flash`). Put the API endpoint, model name, and key in Streamlit Cloud Secrets; never put the real key in this repository.
 
 Invoice text is sent to the AI service configured for the app. Check your organization's privacy rules and the provider's data policy before uploading real invoices.
 
@@ -51,15 +51,15 @@ Invoice text is sent to the AI service configured for the app. Check your organi
 
 1. Create a GitHub repository and upload the project files. Include `app.py`, `engine.py`, `requirements.txt`, `README.md`, `.gitignore`, and `.streamlit/secrets.toml.example`. Do not upload `venv/`, `.venv/`, private invoices, or a real `secrets.toml`.
 2. In [Streamlit Community Cloud](https://share.streamlit.io/), choose **Create app**, select the GitHub repository and branch, and set the main file to `app.py`.
-3. In the app's **Settings > Secrets**, add settings for an OpenAI-compatible provider. Use the provider's own endpoint, model name, and key:
+3. In the app's **Settings > Secrets**, add these Google Gemini settings. Replace the placeholder with your Gemini API key:
 
    ```toml
    AI_PROVIDER = "openai_compatible"
-   AI_MODEL = "your-provider-model-name"
-   OPENAI_BASE_URL = "https://your-provider.example/v1"
-   OPENAI_API_KEY = "your-secret-api-key"
+   AI_MODEL = "gemini-3.8-flash"
+   OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
+   OPENAI_API_KEY = "your-gemini-api-key"
    ```
 
 4. Save the settings and deploy. Upload a test invoice and review the result before sharing the app.
 
-The cloud app cannot reach Ollama at `localhost` on your computer. Do not select `AI_PROVIDER = "ollama"` in Community Cloud unless Ollama is running at a cloud-accessible URL and `OLLAMA_URL` is set to that URL. An OpenAI-compatible cloud provider is the straightforward option. Provider usage may cost money; check its pricing and limits.
+The cloud app cannot reach Ollama at `localhost` on your computer. Do not select `AI_PROVIDER = "ollama"` in Community Cloud unless Ollama is running at a cloud-accessible URL and `OLLAMA_URL` is set to that URL. Check Google's current pricing and limits for Gemini API use.
