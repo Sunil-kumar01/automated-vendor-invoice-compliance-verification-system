@@ -2,64 +2,55 @@
 
 ## Explain it simply
 
-**One line:** Upload a vendor invoice PDF and the app uses AI to read the details and point out information that may need review.
+**One line:** Upload a vendor invoice PDF and local AI reads its details and flags information that may need review.
 
-The app extracts invoice text, asks an AI model to organize the details, and displays the result. Its "Valid" or "Flagged" result is a first-pass suggestion, not a financial approval.
+The app is a small demo for checking vendor invoices before a person reviews them. It extracts invoice text, asks the AI to organize important fields, then displays the result. "Valid" is only an AI suggestion, not a financial approval.
 
-## Project files (one line each)
+## What model does it use?
 
-- `app.py` — Shows the upload page, sends the PDF for analysis, and displays the result.
-- `engine.py` — Reads PDF text and calls the selected AI service to extract invoice details.
-- `requirements.txt` — Lists the Python packages Streamlit Cloud installs.
-- `.gitignore` — Keeps local environments, caches, and secret settings out of Git.
-- `.streamlit/secrets.toml.example` — Safe template showing which AI settings to add in Streamlit Cloud.
-- `README.md` — Explains the project and how to run and publish it.
-- `venv/` — Local Python setup; do not upload it to GitHub.
+It uses **Qwen 2.5**, served locally by **Ollama**. The app sends requests to `http://localhost:11434`; it does not send invoice text to a cloud AI service.
 
-## AI model
+## What each file does
 
-The original local setup uses **Qwen 2.5 through Ollama**. For cloud deployment with a Gemini key, use **Google Gemini** through its OpenAI-compatible API (`gemini-3.8-flash`). Put the API endpoint, model name, and key in Streamlit Cloud Secrets; never put the real key in this repository.
+- `app.py` — Displays the page, accepts a PDF, and shows the analysis.
+- `engine.py` — Extracts text from the PDF and asks local Qwen 2.5 to return invoice fields as JSON.
+- `requirements.txt` — Lists the Python libraries needed to run the app.
+- `.gitignore` — Keeps local Python environments, temporary PDFs, and caches out of Git.
+- `README.md` — Explains the demo and how to start it.
+- `venv/` — Python environment on this computer; it is not source code to share.
 
-Invoice text is sent to the AI service configured for the app. Check your organization's privacy rules and the provider's data policy before uploading real invoices.
+## How it works
 
-## Run locally on macOS
+1. A person uploads an invoice PDF.
+2. `pypdf` reads the text from its pages.
+3. The app sends the text to Qwen 2.5 through Ollama on this computer.
+4. The model returns vendor, invoice, purchase order, amount, tax, line item, and issue fields as JSON.
+5. The app displays the extracted data and marks it "Valid" or "Flagged" for a person to review.
 
-1. Install Python and [Ollama](https://ollama.com/).
-2. In Terminal, download the model and start Ollama:
+Scanned/image-only PDFs may not contain selectable text, so this demo may not read them. It does not independently verify suppliers, purchase orders, arithmetic, or regulatory compliance.
 
-   ```bash
-   ollama pull qwen2.5
-   ```
+## Start the demo on this Mac
 
-3. In the project folder, create an environment and install dependencies:
+Install Python and [Ollama](https://ollama.com/), then run these commands from the project folder:
 
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+```bash
+ollama pull qwen2.5
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run app.py
+```
 
-4. Start the app:
+Open the **Local URL** shown in Terminal, usually `http://localhost:8501`. Keep Ollama running while you use the app.
 
-   ```bash
-   streamlit run app.py
-   ```
+## Let someone nearby try it
 
-5. Open `http://localhost:8501` and upload a text-readable PDF.
+`localhost` only works on this computer. For someone on the same trusted Wi-Fi/LAN, start Streamlit so other devices can reach it:
 
-## Deploy on Streamlit Community Cloud
+```bash
+streamlit run app.py --server.address 0.0.0.0
+```
 
-1. Create a GitHub repository and upload the project files. Include `app.py`, `engine.py`, `requirements.txt`, `README.md`, `.gitignore`, and `.streamlit/secrets.toml.example`. Do not upload `venv/`, `.venv/`, private invoices, or a real `secrets.toml`.
-2. In [Streamlit Community Cloud](https://share.streamlit.io/), choose **Create app**, select the GitHub repository and branch, and set the main file to `app.py`.
-3. In the app's **Settings > Secrets**, add these Google Gemini settings. Replace the placeholder with your Gemini API key:
+Find this Mac's local network IP address (for example, in **System Settings > Wi-Fi > Details**) and give the other person `http://<this-mac-ip>:8501`. Keep this limited to a trusted network, allow the connection through the Mac firewall if asked, and keep Ollama running. Do not expose this demo directly to the public internet; it has no login or access control.
 
-   ```toml
-   AI_PROVIDER = "openai_compatible"
-   AI_MODEL = "gemini-3.8-flash"
-   OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
-   GEMINI_API_KEY = "your-gemini-api-key"
-   ```
-
-4. Save the settings and deploy. Upload a test invoice and review the result before sharing the app.
-
-The cloud app cannot reach Ollama at `localhost` on your computer. Do not select `AI_PROVIDER = "ollama"` in Community Cloud unless Ollama is running at a cloud-accessible URL and `OLLAMA_URL` is set to that URL. Check Google's current pricing and limits for Gemini API use.
+For someone outside your network, `localhost` will not work. The simplest safe option is to show them the demo on this Mac; remote public sharing requires a separately secured hosting/tunnel setup.

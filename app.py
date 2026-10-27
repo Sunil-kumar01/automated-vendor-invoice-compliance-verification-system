@@ -1,50 +1,38 @@
 import os
 
 import streamlit as st
-from pypdf.errors import PdfReadError
 
-from engine import analyze_document, extract_text_from_pdf
-
-
-def setting(name, default=""):
-    return str(st.secrets.get(name, os.environ.get(name, default)))
+from engine import analyze_document_locally, extract_text_from_pdf
 
 
-st.set_page_config(page_title="Vendor Invoice Checker", layout="centered")
-st.title("Vendor Invoice Checker")
-st.write("Upload a vendor invoice PDF to extract key details and flag items for review.")
-st.caption(
-    "Invoice text is sent to the AI service configured for this app. "
-    "Only upload documents approved for that service."
-)
+st.set_page_config(page_title="Enterprise B2B AI Agent", layout="centered")
 
-uploaded_file = st.file_uploader("Upload vendor invoice (PDF)", type=["pdf"])
+st.title("Secure Local B2B AI Agent")
+st.write("Automated Vendor Invoice & Compliance Verification System")
+
+uploaded_file = st.file_uploader("Upload Vendor Document (PDF)", type=["pdf"])
 
 if uploaded_file is not None:
-    provider = setting("AI_PROVIDER", "ollama")
-    model = setting("AI_MODEL", "qwen2.5")
-    ollama_url = setting("OLLAMA_URL", "http://localhost:11434/api/generate")
-    openai_base_url = setting("OPENAI_BASE_URL")
-    api_key = setting("GEMINI_API_KEY") or setting("OPENAI_API_KEY")
-
+    temp_path = "temp.pdf"
     try:
-        with st.spinner("Reading the invoice and checking its details..."):
-            raw_text = extract_text_from_pdf(uploaded_file.getvalue())
-            agent_output = analyze_document(
-                raw_text,
-                provider=provider,
-                model=model,
-                ollama_url=ollama_url,
-                openai_base_url=openai_base_url,
-                api_key=api_key,
-            )
-    except (PdfReadError, OSError, RuntimeError, ValueError) as error:
+        with open(temp_path, "wb") as file:
+            file.write(uploaded_file.getbuffer())
+
+        with st.spinner("Extracting text and running local AI validation..."):
+            raw_text = extract_text_from_pdf(temp_path)
+            agent_output = analyze_document_locally(raw_text)
+    except Exception as error:
         st.error(f"Could not analyze this PDF: {error}")
     else:
-        st.subheader("Extraction results")
+        st.subheader("Extraction Results")
         st.json(agent_output)
 
         if agent_output.get("ComplianceStatus") == "Valid":
-            st.success("The invoice appears complete. Please review before approval.")
+            st.success("Verification Passed: Invoice appears complete.")
         else:
-            st.warning("Review the flagged or missing information before approval.")
+            st.warning(
+                "Attention Required: Discrepancies or missing compliance data found."
+            )
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
